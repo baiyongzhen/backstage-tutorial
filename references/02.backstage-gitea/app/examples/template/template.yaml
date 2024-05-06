@@ -33,7 +33,7 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
-              - 192.168.56.171:3300
+              - 192.168.56.174:3300
 
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.

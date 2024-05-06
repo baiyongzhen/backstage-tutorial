@@ -7,7 +7,6 @@ services:
     volumes:
       - "./:/local"
       - "./app/app-config.yaml:/backstage/app/app-config.yaml"
-      - "./app/examples:/backstage/app/examples"
       - "./app/certs:/backstage/app/certs"
       - "/var/run/docker.sock:/var/run/docker.sock"      
     env_file: .env
