@@ -1,0 +1,59 @@
+#
+# .gitea/gitea-ci.yaml
+#
+name: Build And Test
+run-name: ${{ gitea.actor }} is runs ci pipeline
+#on: [ push ]
+on:
+  push:
+    branches:
+      - main   
+    paths-ignore:
+      - LICENCE
+      - 'docs/**'
+      - 'helm/**'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - LICENCE
+      - 'docs/**'
+      - 'helm/**'
+
+jobs:
+  Gitea-Docker-Build-Push:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3       
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}          
+      - name: Build and push
+        run: | 
+          source .env.production
+          echo $DOCKER_HUB_NAMESPACE
+          echo $DOCKER_HUB_REPO_NAME
+          IMAGE=${DOCKER_HUB_NAMESPACE}/${DOCKER_HUB_REPO_NAME}:${{gitea.run_number}}
+          echo $IMAGE
+          docker build -t ${DOCKER_HUB_NAMESPACE}/${DOCKER_HUB_REPO_NAME}:${{gitea.run_number}} .
+          docker push ${DOCKER_HUB_NAMESPACE}/${DOCKER_HUB_REPO_NAME}:${{gitea.run_number}}      
+      - name: Update values.yaml
+        run: |
+          source .env.production
+          echo $DOCKER_HUB_NAMESPACE
+          echo $DOCKER_HUB_REPO_NAME          
+          cd helm
+          cat <<EOF > "image.yaml"
+          image:
+            repository: gnu96/${DOCKER_HUB_REPO_NAME}
+            pullPolicy: IfNotPresent
+            tag: ${{gitea.run_number}}
+          EOF
+          git config --global user.name 'gitea'
+          git config --global user.email 'gitea@github.com'          
+          git add image.yaml
+          git commit -m "Update image.yaml"
+          git push

@@ -77,3 +77,7 @@ build-harness
 .vscode
 .direnv
 .env
+
+**/temp/*
+
+04.backstage-terraform-sqs

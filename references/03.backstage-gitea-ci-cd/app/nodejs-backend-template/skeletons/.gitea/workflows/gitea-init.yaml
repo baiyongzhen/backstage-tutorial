@@ -1,0 +1,65 @@
+#
+# .gitea/gitea-init.yaml
+# 
+name: Create Gitea trigger event
+run-name: ${{ gitea.actor }} is runs ci pipeline
+on:
+  create:
+    branches:
+      - main
+
+jobs:
+  BackStage-Gitea-CI-CD-Example:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3    
+      - name: Create docker hub repository 
+        run: |
+          source .env.production
+          echo $DOCKER_HUB_REPO_NAME
+          echo $DOCKER_HUB_NAMESPACE
+          TOKEN=$(curl -s -H "Content-Type: application/json" \
+          -X POST \
+          -d '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_TOKEN }}"}' \
+          https://hub.docker.com/v2/users/login/ | jq -r .token)
+          # echo $TOKEN
+          curl -s -H "Content-Type: application/json" \
+          -H "Authorization: JWT ${TOKEN}" \
+          -X POST -d '{"namespace": "gnu96", "name": "'${DOCKER_HUB_REPO_NAME}'", "description": "", "is_private": false, "registry": "docker"}' \
+          https://hub.docker.com/v2/repositories/
+      - name: Create argocd repository & application
+        run: |
+          source .env.production
+          echo $ARGOCD_APP_NAME
+          ARGOCD_VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+          curl -sSL -o ./argocd-${ARGOCD_VERSION} https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64
+          chmod +x ./argocd-${ARGOCD_VERSION}
+          sudo mv ./argocd-${ARGOCD_VERSION} /usr/local/bin/argocd 
+          argocd version --client
+          # ArgoCD Login
+          argocd login  ${{ secrets.ARGOCD_URL }} \
+          --username ${{ secrets.ARGOCD_USERNAME }} \
+          --password ${{ secrets.ARGOCD_PASSWORD }} \
+          --insecure
+          # Create Repo
+          argocd repo add \
+          ${{ gitea.server_url}}/${{ gitea.repository }}.git \
+          --username ${{ secrets.GIT_USERNAME }} \
+          --password ${{ secrets.GIT_PASSWORD }} \
+          --insecure-skip-server-verification \
+          --upsert
+          # Careate ArgoCD Application
+          argocd app create ${ARGOCD_APP_NAME} \
+          --project default \
+          --sync-policy automated  \
+          --sync-option CreateNamespace=true \
+          --sync-option ApplyOutOfSyncOnly=true \
+          --repo ${{ gitea.server_url}}/${{ gitea.repository }}.git \
+          --revision main \
+          --path helm \
+          --dest-server https://kubernetes.default.svc \
+          --dest-namespace default \
+          --values image.yaml \
+          --values values.yaml \
+          --upsert

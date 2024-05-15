@@ -75,6 +75,8 @@ scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
 
 catalog:
+  # https://backstage.io/docs/features/software-catalog/configuration/#processing-interval
+  processingInterval: { minutes: 1 }
   providers:
     gitea:
       selHosted:
@@ -93,6 +95,12 @@ catalog:
     # Local example template
     - type: file
       target: ../../examples/template/template.yaml
+      rules:
+        - allow: [Template]
+
+    # Local node js template
+    - type: file
+      target: ../../examples/nodejs-backend-template/template.yaml
       rules:
         - allow: [Template]
 

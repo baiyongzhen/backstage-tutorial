@@ -8,11 +8,11 @@ services:
     environment:
       CONFIG_FILE: /config.yaml
       GITEA_INSTANCE_URL: "https://192.168.56.174:3300" 
-      GITEA_RUNNER_REGISTRATION_TOKEN: WEJ1OSNEwaOi8PACVX9nRfGH1FyV6uCwVCwKlacg
+      GITEA_RUNNER_REGISTRATION_TOKEN: h4G5lGOv8cgyOpIxeGISyW0FQUIaUElx4Ir0Bzj0
       GITEA_RUNNER_NAME: "act_runner"
       #GITEA_RUNNER_LABELS: ubuntu-latest:docker
     volumes:
-      - ~/gitea/act-runner/data:/data
-      - ~/gitea/act-runner/cache:/root/.cache    
+      #- ~/gitea/act-runner/data:/data
+      #- ~/gitea/act-runner/cache:/root/.cache    
       - ./config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock

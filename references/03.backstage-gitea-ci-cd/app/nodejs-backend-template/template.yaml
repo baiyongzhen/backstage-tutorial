@@ -1,0 +1,175 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: nodejs-backend-template
+  title: Create a Node.js Backend application
+  description: Deploy a Node js App on k3s using ArgoCD
+  tags:
+    - recommended
+    - nodejs
+    - javascript
+    - typescript
+    - express
+    - argocd
+spec:
+  owner: user:guest
+  type: service
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide information about the new component
+      required:
+        - name
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:autofocus: true
+          ui:options:
+            rows: 5
+        orgName:
+          title: Organization Name
+          type: string
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+            - Group
+        description:
+          title: Description
+          type: string
+    - title: Provide information about the CI method
+      required:
+        - imageregistry
+        - reponame
+        - namespace
+      properties:
+        imageregistry:
+          title: Select a image registry
+          type: string
+          default: dockerhub
+          enum:
+            - dockerhub
+            - image-registry-harbor-image-registry.svc:5000
+          enumNames:
+            - dockerhub
+            - harbor
+        reponame:
+          title: Docker hub repository name
+          type: string          
+        namespace:
+          title: Docker hub namespace
+          type: string
+    - title: Provide information about the CD method
+      required:
+          - port
+      properties:
+        port:
+          title: Port
+          type: number
+          default: 80
+          description: Override the port exposed for the application                  
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - 192.168.56.174:3300
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content/
+        values:
+          name: ${{ parameters.name }}
+          orgName: ${{ parameters.orgName }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          imageregistry: ${{ parameters.imageregistry }}
+          reponame: ${{ parameters.reponame }}
+          namespace: ${{ parameters.namespace }}
+          port: ${{ parameters.port }}
+          repoUrl: ${{ parameters.repoUrl }}
+
+    # Downloads a skeleton, templates variables into file and directory names and content
+    # https://backstage.io/docs/reference/plugin-scaffolder-backend.createfetchtemplateaction/
+    - id: gitea-actions-template
+      name: Generating the Gitea actions Component
+      action: fetch:template
+      input:
+        url: ./skeletons/
+        copyWithoutTemplating:
+          - .gitea/workflows/
+
+    - id: helm-template
+      name: Generating the Helm Component
+      action: fetch:template
+      input:
+        url: ./skeletons/
+        copyWithoutTemplating:
+          - helm/
+
+    - id: catalog-Template
+      name: Generating the Catalog Info Component
+      action: fetch:template
+      input:
+        url: ./catalog-info/
+        values:
+          name: ${{ parameters.name }}
+          orgName: ${{ parameters.orgName }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          imageregistry: ${{ parameters.imageregistry }}
+          reponame: ${{ parameters.reponame }}
+          namespace: ${{ parameters.namespace }}
+          port: ${{ parameters.port }}
+          repoUrl: ${{ parameters.repoUrl }}
+
+    # This step publishes the contents of the working directory to GitHub.
+    - id: publish
+      name: Publishing to Source Code Repository
+      action: publish:gitea
+      input:
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        #protectDefaultBranch: false
+        #repoVisibility: public
+
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Registering to the Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: 'catalog-info.yaml'
+
+    - id: log-message
+      name: Log Message
+      action: debug:log
+      input:
+        message: ${{ steps['publish'].output.repoContentsUrl }}
+
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
