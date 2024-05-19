@@ -6,6 +6,6 @@
 
 3. [Backstage 와 Gitea 연동하기](https://medium.com/@dudwls96/backstage-%EC%99%80-gitea-%EC%97%B0%EB%8F%99%ED%95%98%EA%B8%B0-4f8221184444)
 
-4. Backstage 와 Gitea Actions 활용한 CI/CD 자동화 환경 만들기
+4. [Backstage 와 Gitea Actions 활용한 CI/CD 환경 만들기](https://medium.com/@dudwls96/backstage-%EC%99%80-gitea-actions-%ED%99%9C%EC%9A%A9%ED%95%9C-ci-cd-%EC%9E%90%EB%8F%99%ED%99%94-%ED%99%98%EA%B2%BD-%EB%A7%8C%EB%93%A4%EA%B8%B0-4-50df3ff53dc6)
 
 5. Backstage 와 Terraform 연동 및 LocalStack 활용한 테스트 환경 만들기
