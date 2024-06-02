@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ${{ values.name | dump }}
+  #title: ${{ values.title | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - aws-resource
+    - sqs
+spec:
+  type: aws-resource
+  subType: "arn:aws:sqs"
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

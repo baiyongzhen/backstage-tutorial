@@ -5,7 +5,8 @@ x-default-logging: &logging
   options:
     max-size: "5m"
     max-file: "2"
-
+    
+services:
   consul:
     image: hashicorp/consul:1.11.2
     container_name: consul
@@ -22,7 +23,8 @@ x-default-logging: &logging
     logging: *logging
 
   localstack:
-    image: localstack/localstack:2.2
+    #image: localstack/localstack:2.2
+    image: localstack/localstack:3.0.2
     container_name: localstack
     ports:
       - "0.0.0.0:4566:4566"            # LocalStack Gateway

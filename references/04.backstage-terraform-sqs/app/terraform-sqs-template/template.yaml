@@ -1,0 +1,133 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: aws-sqs-template
+  title: Create Standard AWS SQS 
+  description: Create AWS SQS Queue
+  tags:
+    - infrastructure
+    - terraform
+    - aws
+    - queue
+  links:
+    - title: Documentation
+      url: https://backstage.io/docs/features/software-templates
+      icon: docs
+    - title: AWS SQS Terraform module 
+      url: https://registry.terraform.io/modules/terraform-aws-modules/sqs/aws/latest
+      icon: github
+spec:
+  owner: user:guest
+  type: service
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide information about the new component
+      required:
+        - queue_name
+      properties:
+        queue_name:
+          title: Queue name
+          type: string
+          description: |
+            The name of the queue
+          ui:autofocus: true
+        environment:
+          title: The environment the resource is part of
+          type: string
+          description: Which environment your application will be created in is usually related to the AWS account you will be provisioning your resource to.
+          default: dev
+          enum: [prd, stg, dev]
+
+        orgName:
+          title: Organization Name
+          type: string
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+            - Group
+        description:
+          title: Description
+          type: string                 
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - 192.168.56.174:3300
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content/
+        values:
+          name: ${{ parameters.name }}
+          create_dlq: "true"
+
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: gitea-actions-template
+      name: Generating the Gitea actions Component
+      action: fetch:template
+      input:
+        url: ./skeletons/
+        copyWithoutTemplating:
+          - .gitea/workflows/
+
+    - id: terraform-service-template
+      name: Generating the terrafrom Component
+      action: fetch:template
+      input:
+        url: ./skeletons/
+        copyWithoutTemplating:
+          - github.com/aws-sqs/
+
+    - id: catalog-Template
+      name: Generating the Catalog Info Component
+      action: fetch:template
+      input:
+        url: ./catalog-info/
+        values:
+          name: ${{ parameters.queue_name }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+
+    # This step publishes the contents of the working directory to GitHub.
+    - id: publish
+      name: Publishing to Source Code Repository
+      action: publish:gitea
+      input:
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        #protectDefaultBranch: false
+        #repoVisibility: public
+
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Registering to the Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: 'catalog-info.yaml'
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
