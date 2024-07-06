@@ -39,7 +39,6 @@ spec:
           description: Which environment your application will be created in is usually related to the AWS account you will be provisioning your resource to.
           default: dev
           enum: [prd, stg, dev]
-
         orgName:
           title: Organization Name
           type: string
@@ -74,8 +73,9 @@ spec:
       input:
         url: ./content/
         values:
-          name: ${{ parameters.name }}
+          name: ${{ parameters.queue_name }}
           create_dlq: "true"
+          description: ${{ parameters.description }}
 
     # Each step executes an action, in this case one templates files into the working directory.
     - id: gitea-actions-template
@@ -109,7 +109,7 @@ spec:
       name: Publishing to Source Code Repository
       action: publish:gitea
       input:
-        description: This is ${{ parameters.name }}
+        description: This is ${{ parameters.queue_name }}
         repoUrl: ${{ parameters.repoUrl }}
         defaultBranch: main
         #protectDefaultBranch: false
