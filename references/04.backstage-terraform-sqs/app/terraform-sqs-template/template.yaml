@@ -110,6 +110,7 @@ spec:
       action: publish:gitea
       input:
         description: This is ${{ parameters.queue_name }}
+        # repoUrl: ${{ parameters.repoUrl.split("=")[0] }}=${{ parameters.repoUrl.split("=")[1] }}=prefix-${{ parameters.repoUrl.split("=") | last }} 
         repoUrl: ${{ parameters.repoUrl }}
         defaultBranch: main
         #protectDefaultBranch: false
