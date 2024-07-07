@@ -11,14 +11,12 @@ on:
     paths-ignore:
       - LICENCE
       - 'docs/**'
-      - 'helm/**'
   pull_request:
     branches:
       - main
     paths-ignore:
       - LICENCE
       - 'docs/**'
-      - 'helm/**'
 
 jobs:
   Gitea-Terraform-Build-Deploy:
