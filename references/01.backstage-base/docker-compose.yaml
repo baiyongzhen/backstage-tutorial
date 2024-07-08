@@ -1,7 +1,7 @@
 version: '3'
 services:
   backstage:
-    image: gnu96/backstage-amd64:0.5.8
+    image: gnu96/backstage-arm64:0.5.8
     container_name: backstage
     command: sh -c 'yarn dev'
     volumes:

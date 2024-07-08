@@ -1,5 +1,8 @@
+# export DOCKER_USERNAME="xxx"
+# export DOCKER_PASSWORD="xxx/!"
+
 IMAGE_NAME := default-image
-TAG := ubuntu-20-04-rc-01
+TAG := ubuntu-20-04-arm64
 DOCKER_USERNAME ?= $(echo $DOCKER_USERNAME)
 DOCKER_PASSWORD ?= $(echo $DOCKER_PASSWORD)
 

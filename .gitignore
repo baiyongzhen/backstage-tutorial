@@ -79,5 +79,6 @@ build-harness
 .env
 
 **/temp/*
+**/docker/data/*
 
 04.backstage-terraform-sqs

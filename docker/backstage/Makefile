@@ -1,5 +1,10 @@
-IMAGE_NAME := backstage-amd64
-TAG := 0.5.8
+# IMAGE_NAME := backstage-amd64
+# export DOCKER_USERNAME="xxx"
+# export DOCKER_PASSWORD="xxx/!"
+
+IMAGE_NAME := backstage-arm64
+
+TAG := 0.5.9
 DOCKER_USERNAME ?= $(echo $DOCKER_USERNAME)
 DOCKER_PASSWORD ?= $(echo $DOCKER_PASSWORD)
 

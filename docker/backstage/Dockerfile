@@ -6,7 +6,7 @@ yarn config set python /usr/bin/python3
 
 WORKDIR /backstage
 ENV BACKSTAGE_APP_NAME=app
-ENV BACKSTAGE_CREATE_APP_VERSION="0.5.8"
+ENV BACKSTAGE_CREATE_APP_VERSION="0.5.9"
 
 RUN yarn config set network-timeout 300000
 RUN echo "Installing the latest Backstage app using Create App version $BACKSTAGE_CREATE_APP_VERSION"
